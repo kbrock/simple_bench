@@ -1,3 +1,10 @@
 #!/usr/bin/env ruby
 
+lib = File.expand_path("../../lib", __FILE__)
+
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
 require "simple_bench"
+require "simple_bench/cli"
+
+SimpleBench::Cli.new.parse(ARGV).run
