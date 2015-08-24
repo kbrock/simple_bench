@@ -48,6 +48,20 @@ module SimpleBench
       insert.execute sha, now, label, us, iters, ips, ips_sd, cycles
     end
 
+    def grouped_metrics(grouping = [:sha, :label])
+      self.results_as_hash = true
+      results = each.map do |row|
+        {
+          sha: row["sha"],
+          date: row["created_at"],
+          label: row["label"],
+          ips: row["ips"].round,
+          ips_sd: row["ips_sd"].round
+        }
+      end
+      multi_group(results, grouping)
+    end
+
     # def [](key)
     #   db.execute("select ips, stddev from metrics where sha = ? and name = ?", sha, key).map { |row| row.first }.first
     # end
@@ -80,7 +94,29 @@ module SimpleBench
       return false
     end
 
+    def metrics(&block)
+      db.execute "select distinct(label) from metrics order by label", &block
+    end
+
+    # @yield [Array[Date,]] the list of shas and the corresponding created_at
+    def shas(&block)
+      db.execute "select distinct(sha, created_at) from metrics order by created_at", &block
+    end
+
+    class << self
+      attr_accessor :dbfilename
+    end
+
     private
+
+    # TODO: respect fields parameter
+    def multi_group(results, grouping)
+
+      g = results.group_by { |r| r[:sha] }
+      # group second layer by label
+      g.each { |h, hh| g[h] = hh.group_by { |hhh| hhh[:label] } }
+      g
+    end
 
     def db
       @db ||= create

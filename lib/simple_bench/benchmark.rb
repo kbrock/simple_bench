@@ -24,32 +24,10 @@ module SimpleBench
       db.store(entries)
     end
 
-    def grouped_results
-      db.results_as_hash = true
-      results = db.each.map do |row|
-        {
-          sha: row["sha"],
-          date: row["created_at"],
-          label: row["label"],
-          ips: row["ips"].round,
-          ips_sd: row["ips_sd"].round
-        }
-      end
-      multi_group(results, [:sha, :label])
-    end
-
-    # TODO: respect fields parameter
-    def multi_group(results, fields)
-
-      g = results.group_by { |r| r[:sha] }
-      # group second layer by label
-      g.each { |h, hh| g[h] = hh.group_by { |hhh| hhh[:label] } }
-      g
-    end
-
     # results for line charts
     def show
-      results = grouped_results
+      results = db.grouped_metrics
+      # todo: this is now in an erb
       metric_names = results[results.keys.first].keys.map { |m| m.gsub(/(init_|run_)/,'') }.uniq
       # would like to sort metric_names by ips (just for one)
 
