@@ -1,0 +1,40 @@
+<%-
+  metric_names = results[results.keys.first].keys.map { |m| m.gsub(/(init_|run_)/,'') }.uniq
+-%>
+var data = [{
+<%-
+  results.each_with_index do |(sha, metrics), i|
+    if i > 0
+-%>
+  ]}, {
+<%-
+    end
+    date = metrics.first[1].first[:date] #.split("T").first
+-%>
+  name: "<%=sha%>", date: "<%=date%>", values: [
+<%-
+    metric_names.each_with_index do |bench, j|
+    metric = metrics[bench] || metrics["run_#{bench}"]
+    metric = metric.first
+
+    init_metric = metrics["init_#{bench}"]
+    init_metric = init_metric.first if init_metric
+%>
+<%- if j > 0 %>
+,
+<%- end -%>
+<%= "    {bench: %-20s, ips: %-8s, sd: %-8s" %
+    ["\"#{bench}\"",metric[:ips], metric[:ips_sd]] -%>
+<%- if init_metric -%>
+<%= ", init_ips: %-8s, init_sd: %-8s" %
+      [init_metric[:ips], init_metric[:ips_sd]] -%>
+<%
+    end
+-%>
+}
+<%
+  end
+-%>
+
+<% end -%>
+]}];

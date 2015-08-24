@@ -44,7 +44,11 @@ var svg = d3.select("body").append("svg")
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+<% if results.size > 0 %>
+<%= erb :'show_json', :locals => { :results => results } %>
+<%
+else # mock data
+%>
 var data = [{
   name: "c3ad27d3", date: "2015-05-22T18:40:04+02:00", values: [
     {bench: "comments"          , ips: 285510  , sd: 49760   , init_ips: 5953    , init_sd: 248     },
@@ -118,8 +122,9 @@ var data = [{
     {bench: "one"               , ips: 124521  , sd: 24414   , init_ips: 4028    , init_sd: 338     },
     {bench: "perper"            , ips: 231929  , sd: 44044   , init_ips: 4299    , init_sd: 225     }
 ]}];
-
-
+<%
+end # mock data
+%>
 
 var x = d3.scale.ordinal()
     .rangePoints([0, width])
